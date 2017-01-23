@@ -18,7 +18,9 @@ Jon V (darksun4@gmail.com)
 """
 
 from docopt import docopt
+from terminaltables import SingleTable
 import urllib
+import locale
 
 def process(lines_of_cot, commodity_name='EURO FX'):
     idx = 0
@@ -67,8 +69,53 @@ def _download_report(date_to_get='latest'):
 
     return base_filename
 
+
+def _visualize(json_data, currency, report_date):
+    data = []
+    data.append(['Non-Commercial (current)', 'Non-Commercial (changes)', 'Commercial (current)', 'Commercial (changes)'])
+
+    non_com_current = json_data['non-commercial']['current']
+    non_com_changes = json_data['non-commercial']['changes']
+    com_current = json_data['commercial']['current']
+    com_changes = json_data['commercial']['changes']
+
+    # all
+    data.append([locale.atoi(non_com_current['long']) - locale.atoi(non_com_current['short']),
+                 locale.atoi(non_com_changes['long']) - locale.atoi(non_com_changes['short']),
+                 locale.atoi(com_current['long']) - locale.atoi(com_current['short']),
+                 locale.atoi(com_changes['long']) - locale.atoi(com_changes['short'])])
+
+    table = SingleTable(data)
+    table.title = 'Commitment of Traders (sum):' + currency + "|" + report_date    
+    print table.table
+
+    # Non-Commercial
+    data = []
+    data.append(['Long (current)', 'Short (current)', 'Long (changes)', 'Short (changes)'])
+
+    data.append([locale.atoi(non_com_current['long']), locale.atoi(non_com_current['short']),
+                 locale.atoi(non_com_changes['long']), locale.atoi(non_com_changes['short'])])
+
+    table = SingleTable(data)
+    table.title = 'Commitment of Traders (Non-Commercial):' + currency + "|" + report_date
+    print table.table
+
+    # Com
+    data = []
+    data.append(['Long (current)', 'Short (current)', 'Long (changes)', 'Short (changes)'])
+
+    data.append([
+                 locale.atoi(com_current['long']), locale.atoi(com_current['short']),
+                 locale.atoi(com_changes['long']), locale.atoi(com_changes['short'])])
+    
+    table = SingleTable(data)
+    table.title = 'Commitment of Traders (Commercial):' + currency + "|" + report_date    
+    print table.table
+
+
 if __name__ == "__main__":
     arguments = docopt(__doc__)
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
     if arguments['latest'] or arguments['--date']:
         if arguments['latest']:
@@ -84,8 +131,9 @@ if __name__ == "__main__":
         report_date = None
 
     with open(report, 'r') as fd:
-        print "Report date:", report_date
-        print "-------------------------"
-        print process(fd.readlines(), arguments['<currency>'])
+        data = process(fd.readlines(), arguments['<currency>'])
+        _visualize(data, arguments['<currency>'], report_date)
+        
 
+        
 
