@@ -43,7 +43,7 @@ def process(lines_of_cot, commodity_name='EURO FX'):
                                                  'short': changes[4],
                                                  'spreads': changes[5]}}
 
-            return results
+            return results, current, changes
         
     return 0
 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         report_date = None
 
     with open(report, 'r') as fd:
-        data = process(fd.readlines(), arguments['<currency>'])
+        data, current, changes  = process(fd.readlines(), arguments['<currency>'])
         _visualize(data, arguments['<currency>'], report_date)
         
 
