@@ -5,7 +5,7 @@ Usage:
   cot.py latest <currency>
   cot.py --date <report_date> <currency>
   cot.py --from-file <filename> <currency>
-  
+
 Example:
   cot.py latest EURO
   cot.py --date 01/19/2017 YEN
@@ -72,7 +72,7 @@ def _download_report(date_to_get='latest'):
 
 def _visualize(json_data, currency, report_date):
     data = []
-    data.append(['Non-Commercial (current)', 'Non-Commercial (changes)', 'Commercial (current)', 'Commercial (changes)'])
+    data.append(['Non-Commercial (% long)', 'Commercial (% long)'])
 
     non_com_current = json_data['non-commercial']['current']
     non_com_changes = json_data['non-commercial']['changes']
@@ -80,13 +80,11 @@ def _visualize(json_data, currency, report_date):
     com_changes = json_data['commercial']['changes']
 
     # all
-    data.append([locale.atoi(non_com_current['long']) - locale.atoi(non_com_current['short']),
-                 locale.atoi(non_com_changes['long']) - locale.atoi(non_com_changes['short']),
-                 locale.atoi(com_current['long']) - locale.atoi(com_current['short']),
-                 locale.atoi(com_changes['long']) - locale.atoi(com_changes['short'])])
+    data.append([float(locale.atoi(non_com_changes['long']))/locale.atoi(non_com_current['long']),
+                 float(locale.atoi(com_changes['long']))/locale.atoi(com_current['long'])])
 
     table = SingleTable(data)
-    table.title = 'Commitment of Traders (sum):' + currency + "|" + report_date    
+    table.title = 'Commitment of Traders (long %): ' + currency + " | " + report_date    
     print table.table
 
     # Non-Commercial
