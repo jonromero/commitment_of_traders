@@ -15,7 +15,7 @@ if __name__ == "__main__":
     csv_file = open("all_data.csv", "w+")
     csv_file.write("non_com_long;non_com_short;spreads;com_long;com_short;date\n")
     
-    start, end = datetime(2005, 01, 4), datetime(2017, 01, 23)
+    start, end = datetime(2005, 01, 4), datetime(2017, 02, 03)
     days = (start + timedelta(days=i) for i in range((end - start).days + 1))
     all_tuesdays = [d for d in days if d.weekday() == 1]
 

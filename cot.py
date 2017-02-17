@@ -80,8 +80,8 @@ def _visualize(json_data, currency, report_date):
     com_changes = json_data['commercial']['changes']
 
     # all
-    data.append([float(locale.atoi(non_com_changes['long']))/locale.atoi(non_com_current['long']),
-                 float(locale.atoi(com_changes['long']))/locale.atoi(com_current['long'])])
+    data.append([float(locale.atoi(non_com_changes['long']))/locale.atoi(non_com_current['long'])*100,
+                 float(locale.atoi(com_changes['long']))/locale.atoi(com_current['long'])*100])
 
     table = SingleTable(data)
     table.title = 'Commitment of Traders (long %): ' + currency + " | " + report_date    
