@@ -8,16 +8,17 @@
 
 cot.volatility <- function(csv_file="~/Sources/COT/all_data.csv", limit=300) {
   data <- read.csv(csv_file, sep=";",header = T)
-  latest <- tail(data, limit)
-  Date <- as.Date(latest$date, '%m/%d/%Y')
-  volatility_long <- data.frame(Date, Delt(latest$com_long, latest$com_long, k=1)*100)
-  #volatility_short <- data.frame(Date, Delt(latest$com_short, latest$com_short, k=1)*100)
+  rawData <- tail(data, limit)
+  Date <- as.Date(rawData$date, '%m/%d/%Y')
+  volatility_long <- data.frame(Date, Delt(rawData$com_long, rawData$com_long, k=1)*100)
+  volatility_short <- data.frame(Date, Delt(rawData$com_short, rawData$com_short, k=1)*100)
   
-  Date <- as.Date(latest$date, format="%m/%d/%Y")
-  Vol <- volatility_long$Delt.1.arithmetic
+  Date <- as.Date(rawData$date, format="%m/%d/%Y")
+  Vol <- volatility_long$Delt.1.arithmetic -volatility_short$Delt.1.arithmetic
+  rawData$Vol <- Vol
   result <- data.frame(Date, Vol) 
   
-  return(result)
+  return(list("Vol"=result, "rawData"=rawData))
   
   #latest$volatility_long_100 <- volatility_long$Delt.1.arithmetic * 100
   #latest$volatility_short_100 <- volatility_short$Delt.1.arithmetic * 100

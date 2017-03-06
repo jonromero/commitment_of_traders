@@ -31,7 +31,10 @@ volatilityFX <- Delt(weeklyFxData$fxcloseData.Open, weeklyFxData$fxcloseData.Clo
 volatilityFX <- data.frame(date=index(volatilityFX), coredata(volatilityFX))
 colnames(volatilityFX) = c("Date", "Vol")
 
-volatilityCOT <- cot.volatility()
+returnData <- cot.volatility()
+rawData <- returnData$rawData
+volatilityCOT <- returnData$Vol
+
 # we ge the report on Friday but we can act on Sunday 
 # +5 days from Tuesday when the report is out
 volatilityCOT$Date <-volatilityCOT$Date+5
@@ -55,7 +58,9 @@ plot(volatilityCOT, volatilityFX$Vol, type="l")
 lines(volatilityFX, type="l", col="red")
 
 # create signal based on COT
-volatilityCOT <- volatilityCOT[abs(volatilityCOT$Vol) > 10,]
+volatilityCOT <- volatilityCOT[abs(volatilityCOT$Vol) > 3,]
+volatilityCOT <- volatilityCOT[volatilityCOT$Date > "2016-01-01",]
+
 signalCOT <- data.frame(volatilityCOT$Date, ifelse(volatilityCOT$Vol>=0, 'Sell', 'Buy'))
 colnames(signalCOT) = c("Date", "EURO")
 

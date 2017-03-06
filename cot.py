@@ -72,7 +72,7 @@ def _download_report(date_to_get='latest'):
 
 def _visualize(json_data, currency, report_date):
     data = []
-    data.append(['Non-Commercial (% long)', 'Commercial (% long)'])
+    data.append(['Non-Commercial (% long-short)', 'Commercial (% long-short)'])
 
     non_com_current = json_data['non-commercial']['current']
     non_com_changes = json_data['non-commercial']['changes']
@@ -80,8 +80,10 @@ def _visualize(json_data, currency, report_date):
     com_changes = json_data['commercial']['changes']
 
     # all
-    data.append([float(locale.atoi(non_com_changes['long']))/locale.atoi(non_com_current['long'])*100,
-                 float(locale.atoi(com_changes['long']))/locale.atoi(com_current['long'])*100])
+    data.append([float(locale.atoi(non_com_changes['long']))/locale.atoi(non_com_current['long'])*100-
+                 float(locale.atoi(non_com_changes['short']))/locale.atoi(non_com_current['short'])*100,
+                 float(locale.atoi(com_changes['long']))/locale.atoi(com_current['long'])*100-
+                 float(locale.atoi(com_changes['short']))/locale.atoi(com_current['short'])*100])
 
     table = SingleTable(data)
     table.title = 'Commitment of Traders (long %): ' + currency + " | " + report_date    
