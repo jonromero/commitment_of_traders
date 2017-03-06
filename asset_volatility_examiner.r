@@ -58,7 +58,7 @@ plot(volatilityCOT, volatilityFX$Vol, type="l")
 lines(volatilityFX, type="l", col="red")
 
 # create signal based on COT
-volatilityCOT <- volatilityCOT[abs(volatilityCOT$Vol) > 3,]
+volatilityCOT <- volatilityCOT[abs(volatilityCOT$Vol) > 4,]
 volatilityCOT <- volatilityCOT[volatilityCOT$Date > "2016-01-01",]
 
 signalCOT <- data.frame(volatilityCOT$Date, ifelse(volatilityCOT$Vol>=0, 'Sell', 'Buy'))
@@ -99,10 +99,12 @@ for(i in 1:nrow(signalCOT)) {
   FXRange <- dayFXData[dayFXData$Date > signalCOT[i, "startDate"] 
             & dayFXData$Date < signalCOT[i, "endDate"] ,]
   closeVal <- tail(FXRange$Vol, 1)
-  results <- rbind(results, data.frame(signalCOT[i,"startDate"], signalCOT[i,"endDate"], FXRange$Vol[1], closeVal,
-                                       max(FXRange$Vol), min(FXRange$Vol), 
-                                       ifelse(FXRange$Vol[1] < closeVal, "Buy", "Sell"),
-                                       signalCOT[i, "buyOrSell"]))
+  if (!is.na(FXRange$Vol[1])) {
+    results <- rbind(results, data.frame(signalCOT[i,"startDate"], signalCOT[i,"endDate"], FXRange$Vol[1], closeVal,
+                                         max(FXRange$Vol), min(FXRange$Vol), 
+                                         ifelse(FXRange$Vol[1] < closeVal, "Buy", "Sell"),
+                                         signalCOT[i, "buyOrSell"]))
+  }
 }
 colnames(results) = c("From", "To", "Open", "Close", "Max", "Min", "Market", "COT")
 results$Pips <-  ifelse(results$Market == results$COT, 
