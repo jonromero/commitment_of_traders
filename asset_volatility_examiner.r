@@ -59,18 +59,21 @@ volatilityCOT <- volatilityCOT[abs(volatilityCOT$Vol) > 10,]
 signalCOT <- data.frame(volatilityCOT$Date, ifelse(volatilityCOT$Vol>=0, 'Sell', 'Buy'))
 colnames(signalCOT) = c("Date", "EURO")
 
+
+# Complicated but merges date based on date ranges
 tmp <- data.frame()
+startDate <- head(signalCOT$Date,1)
+
 for (i in 1:nrow(signalCOT)){
-  tmp <- ifelse (signalCOT[i,"EURO"] != signalCOT[i+i,"EURO"], 
-                 data.frame(signalCOT[i,"Date"], signalCOT[i, "EURO"]), 
+  buyOrSell <- signalCOT[i,"EURO"]
+  if (! signalCOT[i+1,"EURO"] %in% buyOrSell) {
+      endDate <- signalCOT[i+1,"Date"]
+      tmp <- rbind(tmp, data.frame(startDate, endDate, buyOrSell))
+      startDate <- signalCOT[i+1,"Date"]
+  } 
 }
 
-#signalCOT$EndDate <- ifelse(signalCOT$EURO == tail(signalCOT$EURO, -1), 'Same', tail(signalCOT$Date, -1))
-#signalCOT$EndDate <- as.Date(strtoi(signalCOT$EndDate))
-#signalCOT$EndDate <- ifelse(signalCOT$EURO == tail(signalCOT$EURO, -2), 'X', "None")
-
-#nSignal <- signalCOT
-#nSignal <- ifelse(signalCOT$EURO == tail(signalCOT$EURO, -1), 'Same', tail(signalCOT$Date, -1))
+signalCOT <- tmp
 
 # occurances of COT volatility over 10
 #over <- volatilityCOT[abs(volatilityCOT$Vol)>10,]$Date
@@ -88,18 +91,18 @@ colnames(dayFXData) = c("Date", "Vol")
 results <- data.frame()
 # Date, Signal, open, close, max, min
 for(i in 1:nrow(signalCOT)) {
-  FXRange <- dayFXData[dayFXData$Date > signalCOT[i, "Date"] 
-            & dayFXData$Date < signalCOT[i+1, "Date"] ,]
+  FXRange <- dayFXData[dayFXData$Date > signalCOT[i, "startDate"] 
+            & dayFXData$Date < signalCOT[i, "endDate"] ,]
   closeVal <- tail(FXRange$Vol, 1)
-  results <- rbind(results, data.frame(signalCOT[i,"Date"], signalCOT[i+1,"Date"], FXRange$Vol[1], closeVal,
+  results <- rbind(results, data.frame(signalCOT[i,"startDate"], signalCOT[i,"endDate"], FXRange$Vol[1], closeVal,
                                        max(FXRange$Vol), min(FXRange$Vol), 
                                        ifelse(FXRange$Vol[1] < closeVal, "Buy", "Sell"),
-                                       signalCOT[i, "EURO"]))
+                                       signalCOT[i, "buyOrSell"]))
 }
 colnames(results) = c("From", "To", "Open", "Close", "Max", "Min", "Market", "COT")
 results$Pips <-  ifelse(results$Market == results$COT, 
                         abs(results$Close-results$Open)*10000, -abs(results$Close-results$Open)*10000)
 
-fxover <- volatilityFX[abs(volatilityFX$Vol)>2,]$Date
-length(intersect(fxover, over))
+sum(results$Pips, na.rm=T)
+
 
